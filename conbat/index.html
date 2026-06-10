@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Rank Clicker v2</title>
+    <style>
+        /* Neon Cyberpunk Dizayn */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #081026 0%, #020613 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(4, 11, 26, 0.9);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid #00f2fe;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 242, 254, 0.15);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 900;
+            color: #00f2fe;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: rgba(0, 242, 254, 0.03);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: linear-gradient(135deg, #0072ff, #00f2fe);
+            color: #ffffff;
+            border-color: #00f2fe;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Ekranlar */
+        .page {
+            display: none;
+            margin-top: 85px;
+            padding: 40px 20px;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* Tanga paneli */
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: rgba(10, 25, 50, 0.5);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 10px 25px;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.05);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .click-power-tag {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* Katta Progresslik Kliklash Aylanasi */
+        .click-container {
+            position: relative;
+            width: 270px;
+            height: 270px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .progress-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            pointer-events: none;
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 8;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: url(#cyan-gradient);
+            stroke-width: 8;
+            stroke-dasharray: 816;
+            stroke-dashoffset: 816;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s ease;
+        }
+
+        /* Ichki Bosiladigan Dumaloq */
+        .main-circle {
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background: #050b18;
+            border: 3px solid rgba(0, 242, 254, 0.2);
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+            transition: transform 0.05s ease, border-color 0.3s;
+            position: relative;
+            z-index: 5;
+        }
+
+        .main-circle:active {
+            transform: scale(0.95);
+        }
+
+        /* Martaba Belgisi Dizayni (Rasmsiz, CSS Neon) */
+        .rank-badge-design {
+            font-size: 50px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 15px var(--rank-color, #00f2fe));
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .rank-name-design {
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--rank-color, #fff);
+            text-shadow: 0 0 10px var(--rank-color, #00f2fe);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        /* Bosishlar hisoblagichi */
+        .counter-container {
+            text-align: center;
+            background: rgba(4, 11, 26, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 25px;
+            border-radius: 14px;
+            min-width: 220px;
+        }
+
+        .counter-text {
+            font-size: 15px;
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .counter-target {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Uchar matn (+X) */
+        .floating-text {
+            position: absolute;
+            color: #00f2fe;
+            font-size: 32px;
+            font-weight: 900;
+            pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+            text-shadow: 0 0 12px #00f2fe;
+            z-index: 20;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-90px) scale(1.2); }
+        }
+
+        /* Sarlavha */
+        .panel-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #00f2fe;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Grid Tizimi */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1050px;
+            padding: 10px;
+        }
+
+        .card {
+            background: rgba(9, 19, 39, 0.8);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #00f2fe;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.2);
+            transform: translateY(-4px);
+        }
+
+        /* Do'kondagi aylanalar prevyusi */
+        .shop-circle-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #00f2fe;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-price {
+            font-size: 16px;
+            color: #ffbc00;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .card-btn {
+            background: linear-gradient(90deg, #0052d4, #4364f7, #6fb1fc);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            width: 100%;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .card-btn:hover:not(:disabled) {
+            box-shadow: 0 0 15px #00f2fe;
+            filter: brightness(1.1);
+        }
+
+        .card-btn.equipped {
+            background: #22c55e;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+            cursor: default;
+        }
+
+        .card-btn:disabled {
+            background: #1a202c;
+            color: #4a5568;
+            border: 1px solid #2d3748;
+            cursor: not-allowed;
+        }
+
+        /* Martabalar ro'yxati jadvali */
+        .rank-table-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(9, 19, 39, 0.8);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            background: rgba(0, 242, 254, 0.1);
+            color: #00f2fe;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .td-rank {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+        }
+
+        .table-rank-icon {
+            font-size: 24px;
+        }
+
+        .current-rank-row td {
+            background: rgba(0, 242, 254, 0.06) !important;
+            color: #00f2fe;
+            font-weight: 700;
+        }
+
+        .badge-current {
+            background: #00f2fe;
+            color: #020613;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+
+        .reset-data {
+            margin-top: 40px;
+            color: #4a5568;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .reset-data:hover { color: #f56565; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">CYBER RANK</div>
+        <div class="nav-links">
+            <button class="nav-btn active" id="nav-game" onclick="switchPage('game')">🎮 Oʻyin</button>
+            <button class="nav-btn" id="nav-shop" onclick="switchPage('shop')">🛒 Shopping</button>
+            <button class="nav-btn" id="nav-boosters" onclick="switchPage('boosters')">⚡ Cyber-Booster</button>
+            <button class="nav-btn" id="nav-ranks" onclick="switchPage('ranks')">🏆 Martabalar</button>
+        </div>
+    </nav>
+
+    <div class="page active" id="game-page">
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-label">Joriy Tangalar</div>
+                <div class="stat-value" id="coin-display">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Joriy Martaba</div>
+                <div class="stat-value" id="rank-display" style="color: #00f2fe; font-size: 24px; padding-top: 6px;">Bronze</div>
+            </div>
+        </div>
+
+        <div class="click-power-tag" id="power-display">Bosish kuchi: +1</div>
+
+        <div class="click-container">
+            <svg class="progress-svg" viewBox="0 0 270 270">
+                <defs>
+                    <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#0072ff" />
+                        <stop offset="100%" stop-color="#00f2fe" />
+                    </linearGradient>
+                </defs>
+                <circle class="progress-bg" cx="135" cy="135" r="130"></circle>
+                <circle class="progress-bar" id="progress-ring" cx="135" cy="135" r="130"></circle>
+            </svg>
+            
+            <div class="main-circle" id="click-target" onclick="handleCoinClick(event)">
+                <div class="rank-badge-design" id="circle-badge">🪂</div>
+                <div class="rank-name-design" id="circle-name">Bronze</div>
+            </div>
+        </div>
+
+        <div class="counter-container">
+            <div class="counter-text" id="click-counter-text">0 / 1,000</div>
+            <div class="counter-target" id="next-rank-text">Silverga o'tish uchun</div>
+        </div>
+    </div>
+
+    <div class="page" id="shop-page">
+        <h2 class="panel-title">Aylana do'koni Aura bezaklari</h2>
+        <div class="grid" id="shop-grid">
+            </div>
+    </div>
+
+    <div class="page" id="boosters-page">
+        <h2 class="panel-title">Cyber Boosters</h2>
+        <div class="grid" id="boosters-grid">
+            </div>
+    </div>
+
+    <div class="page" id="ranks-page">
+        <h2 class="panel-title">Martabalar Tizimi</h2>
+        <div class="rank-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Martaba</th>
+                        <th>Kerakli umumiy tanga</th>
+                        <th>Bosish multiplikatori</th>
+                    </tr>
+                </thead>
+                <tbody id="ranks-table-body">
+                    </tbody>
+            </table>
+        </div>
+        <div class="reset-data" onclick="resetAllData()">O'yin ma'lumotlarini tozalash</div>
+    </div>
+
+    <script>
+        // --- MARTABALAR MA'LUMOTLAR OMBORI (MUTLAQO HAVOLASIZ / RASMSIZ) ---
+        const rankTiers = [
+            { id: 'bronze', name: 'Bronze', req: 0, bonus: 1, icon: '🪂', color: '#cd7f32' },
+            { id: 'silver', name: 'Silver', req: 1000, bonus: 2, icon: '⚔️', color: '#c0c0c0' },
+            { id: 'gold', name: 'Gold', req: 5000, bonus: 3, icon: '🔫', color: '#ffd700' },
+            { id: 'platinum', name: 'Platinum', req: 15000, bonus: 5, icon: '🛡️', color: '#e5e4e2' },
+            { id: 'diamond', name: 'Diamond', req: 40000, bonus: 8, icon: '💎', color: '#b9f2ff' },
+            { id: 'crown', name: 'Crown', req: 100000, bonus: 12, icon: '👑', color: '#ff7700' },
+            { id: 'ace', name: 'Ace', req: 250000, bonus: 20, icon: '🔥', color: '#ff4757' },
+            { id: 'ace_master', name: 'Ace Master', req: 600000, bonus: 35, icon: '⚡', color: '#2ed573' },
+            { id: 'ace_dominator', name: 'Ace Dominator', req: 1500000, bonus: 60, icon: '💥', color: '#1e90ff' },
+            { id: 'conqueror', name: 'Conqueror', req: 4000000, bonus: 100, icon: '🏆', color: '#f1c40f' }
+        ];
+
+        // --- DO'KON AURAlari (CHUNCHAKI AYLANA ATROFI DIZAYNI) ---
+        const shopAuras = [
+            { id: 'aura_none', name: 'Standart Kiber Aura', price: 0, borderColor: 'rgba(0, 242, 254, 0.4)', shadow: '0 0 30px rgba(0, 242, 254, 0.3)' },
+            { id: 'aura_purple', name: 'Neon Magenta Aura', price: 8000, borderColor: '#f857a6', shadow: '0 0 35px #f857a6' },
+            { id: 'aura_green', name: 'Yashil Matritsa Radiatsiyasi', price: 35000, borderColor: '#38ef7d', shadow: '0 0 40px #38ef7d' },
+            { id: 'aura_fire', name: 'Olovli Quyosh Aylanasi', price: 120000, borderColor: '#ff4e50', shadow: '0 0 45px #ff4e50' },
+            { id: 'aura_rainbow', name: 'Kvant Kamalagi (Premium)', price: 500000, borderColor: '#ff007f', shadow: '0 0 55px #00f2fe, 0 0 25px #ff007f' }
+        ];
+
+        // --- KUCHAYTIRGICHLAR ---
+        const boosters = [
+            { level: 2, power: 2, price: 1500, name: 'Kiber Klik Multiplier X2', desc: 'Asosiy bosish kuchini +2 barobarga oshiradi' },
+            { level: 3, power: 5, price: 12000, name: 'Giper Plazma Drive', desc: 'Sizga har bir klik uchun +5 kuch beradi' },
+            { level: 4, power: 15, price: 65000, name: 'Kvant Yadrosi Kuchaytirgichi', desc: 'Bosish quvvatini sezilarli darajada +15 ga oshiradi' },
+            { level: 5, power: 50, price: 250000, name: 'Fotonli Klik Matritsasi', desc: 'Har bir bosishda daxshatli +50 tanga qoʻshadi!' },
+            { level: 6, power: 150, price: 1000000, name: 'Cheksizlik Sinaps Moduli', desc: 'Maksimal daraja! Bir bosishda +150 tanga!' }
+        ];
+
+        // --- GLOBAL HOLAT (GAME STATE) ---
+        let gameState = {
+            coins: 0,
+            totalCoinsEarned: 0,
+            clickPower: 1,
+            currentAura: 'aura_none',
+            ownedAuras: ['aura_none'],
+            boosterLevel: 1
+        };
+
+        window.onload = function() {
+            loadProgress();
+            updateUI();
+            checkAndApplyRank();
+            renderShop();
+            renderBoosters();
+            renderRanksTable();
+        };
+
+        // --- EKRANLARNI ALMASHTIRISH ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(`${pageId}-page`).classList.add('active');
+            document.getElementById(`nav-${pageId}`).classList.add('active');
+
+            if(pageId === 'shop') renderShop();
+            if(pageId === 'boosters') renderBoosters();
+            if(pageId === 'ranks') renderRanksTable();
+        }
+
+        // --- TANGAGA BOSISH FUNKSIYASI ---
+        function handleCoinClick(event) {
+            const currentRankObj = getCurrentRank();
+            const totalPower = gameState.clickPower * currentRankObj.bonus;
+
+            gameState.coins += totalPower;
+            gameState.totalCoinsEarned += totalPower;
+
+            createFloatingText(event, `+${totalPower}`);
+            checkAndApplyRank();
+            updateUI();
+            saveProgress();
+        }
+
+        // --- MARTABANI ANIQLASH ---
+        function getCurrentRank() {
+            let current = rankTiers[0];
+            for (let i = 0; i < rankTiers.length; i++) {
+                if (gameState.totalCoinsEarned >= rankTiers[i].req) {
+                    current = rankTiers[i];
+                }
+            }
+            return current;
+        }
+
+        function getNextRank() {
+            for (let i = 0; i < rankTiers.length; i++) {
+                if (gameState.totalCoinsEarned < rankTiers[i].req) {
+                    return rankTiers[i];
+                }
+            }
+            return null;
+        }
+
+        function checkAndApplyRank() {
+            const currentRank = getCurrentRank();
+            const nextRank = getNextRank();
+
+            document.getElementById('rank-display').innerText = currentRank.name;
+            document.getElementById('rank-display').style.color = currentRank.color;
+
+            // Markazdagi aylananing ichki CSS ko'rinishini o'zgartirish
+            const badgeEl = document.getElementById('circle-badge');
+            const nameEl = document.getElementById('circle-name');
+            
+            badgeEl.innerText = currentRank.icon;
+            nameEl.innerText = currentRank.name;
+            
+            // Neon rang o'zgarishi uchun CSS o'zgaruvchi (variable) beramiz
+            document.getElementById('click-target').style.setProperty('--rank-color', currentRank.color);
+
+            // Progress ring yangilanishi
+            const ring = document.getElementById('progress-ring');
+            const totalLength = 816;
+
+            if (nextRank) {
+                const currentRankReq = currentRank.req;
+                const nextRankReq = nextRank.req;
+                const earnedInThisTier = gameState.totalCoinsEarned - currentRankReq;
+                const totalNeededInThisTier = nextRankReq - currentRankReq;
+
+                let percentage = earnedInThisTier / totalNeededInThisTier;
+                if(percentage > 1) percentage = 1;
+                if(percentage < 0) percentage = 0;
+
+                const offset = totalLength - (percentage * totalLength);
+                ring.style.strokeDashoffset = offset;
+
+                document.getElementById('click-counter-text').innerText = `${Math.floor(gameState.totalCoinsEarned).toLocaleString()} / ${nextRankReq.toLocaleString()}`;
+                document.getElementById('next-rank-text').innerText = `${nextRank.name} martabasiga o'tish uchun`;
+            } else {
+                ring.style.strokeDashoffset = 0;
+                document.getElementById('click-counter-text').innerText = `${Math.floor(gameState.totalCoinsEarned).toLocaleString()}`;
+                document.getElementById('next-rank-text').innerText = `MAKSIMAL MARTABA GA ERISHILDI! 🏆`;
+            }
+
+            applyAuraVisual();
+        }
+
+        function applyAuraVisual() {
+            const target = document.getElementById('click-target');
+            const activeAura = shopAuras.find(a => a.id === gameState.currentAura) || shopAuras[0];
+            target.style.borderColor = activeAura.borderColor;
+            target.style.boxShadow = activeAura.shadow;
+        }
+
+        function updateUI() {
+            document.getElementById('coin-display').innerText = Math.floor(gameState.coins).toLocaleString();
+            const currentRankObj = getCurrentRank();
+            document.getElementById('power-display').innerText = `Bosish kuchi: +${gameState.clickPower} (Martaba Multiplikatori: x${currentRankObj.bonus})`;
+        }
+
+        function createFloatingText(event, text) {
+            const container = document.querySelector('.click-container');
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+
+            const rect = container.getBoundingClientRect();
+            const x = event.clientX - rect.left - 15;
+            const y = event.clientY - rect.top - 20;
+
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 550);
+        }
+
+        // --- SHOPPING BO'LIMI ---
+        function renderShop() {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = '';
+
+            shopAuras.forEach(aura => {
+                const isOwned = gameState.ownedAuras.includes(aura.id);
+                const isEquipped = gameState.currentAura === aura.id;
+                const canBuy = gameState.coins >= aura.price;
+
+                let btnText = 'Sotib olish';
+                let btnClass = '';
+                let btnDisabled = !canBuy && !isOwned;
+
+                if (isEquipped) {
+                    btnText = 'Oʻrnatilgan';
+                    btnClass = 'equipped';
+                    btnDisabled = true;
+                } else if (isOwned) {
+                    btnText = 'Jihozlash Aura';
+                }
+
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="shop-circle-preview" style="border-color: ${aura.borderColor}; box-shadow: ${aura.shadow}; background: #050b18;"></div>
+                        <div class="card-title">${aura.name}</div>
+                        <div class="card-desc">Asosiy aylananing neonli tashqi qobiq va nurlanish effektini oʻzgartiradi.</div>
+                        <div class="card-price">${isOwned ? 'Sotib olingan' : aura.price.toLocaleString() + ' 🪙'}</div>
+                        <button class="card-btn ${btnClass}" ${btnDisabled ? 'disabled' : ''} onclick="buyAura('${aura.id}', ${aura.price}, ${isOwned})">
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function buyAura(auraId, price, isOwned) {
+            if (isOwned) {
+                gameState.currentAura = auraId;
+            } else if (gameState.coins >= price) {
+                gameState.coins -= price;
+                gameState.ownedAuras.push(auraId);
+                gameState.currentAura = auraId;
+            }
+            applyAuraVisual();
+            updateUI();
+            renderShop();
+            saveProgress();
+        }
+
+        // --- CYBER-BOOSTERS BO'LIMI ---
+        function renderBoosters() {
+            const grid = document.getElementById('boosters-grid');
+            grid.innerHTML = '';
+
+            boosters.forEach(b => {
+                const isPurchased = gameState.boosterLevel >= b.level;
+                const isNextUpgrade = gameState.boosterLevel === b.level - 1;
+                const canBuy = gameState.coins >= b.price;
+
+                let btnText = `Sotib olish`;
+                let btnDisabled = true;
+
+                if (isPurchased) {
+                    btnText = 'Faollashtirilgan ✓';
+                } else if (isNextUpgrade) {
+                    btnDisabled = !canBuy;
+                } else {
+                    btnText = 'Qulflangan';
+                }
+
+                grid.innerHTML += `
+                    <div class="card">
+                        <div style="font-size: 35px; color: #00f2fe; margin-bottom: 15px; text-shadow:0 0 10px #00f2fe;">⚡</div>
+                        <div class="card-title">${b.name}</div>
+                        <div class="card-desc">${b.desc}</div>
+                        <div class="card-price">${isPurchased ? 'Mulk' : b.price.toLocaleString() + ' 🪙'}</div>
+                        <button class="card-btn" ${btnDisabled ? 'disabled' : ''} onclick="buyBooster(${b.level}, ${b.price}, ${b.power})">
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function buyBooster(level, price, power) {
+            if (gameState.coins >= price && gameState.boosterLevel === level - 1) {
+                gameState.coins -= price;
+                gameState.clickPower = power;
+                gameState.boosterLevel = level;
+                
+                updateUI();
+                renderBoosters();
+                saveProgress();
+            }
+        }
+
+        // --- MARTABALAR JADVALI BO'LIMI ---
+        function renderRanksTable() {
+            const tbody = document.getElementById('ranks-table-body');
+            tbody.innerHTML = '';
+
+            const currentRank = getCurrentRank();
+
+            rankTiers.forEach(tier => {
+                const isCurrent = currentRank.id === tier.id;
+                const rowClass = isCurrent ? 'current-rank-row' : '';
+                const badge = isCurrent ? '<span class="badge-current">Sizniki</span>' : '';
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td>
+                            <div class="td-rank">
+                                <span class="table-rank-icon">${tier.icon}</span>
+                                <span style="color: ${tier.color}">${tier.name}</span> ${badge}
+                            </div>
+                        </td>
+                        <td>${tier.req.toLocaleString()} 🪙</td>
+                        <td>Har klikda x${tier.bonus} ko'paytma</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- SAVE & LOAD ---
+        function saveProgress() {
+            localStorage.setItem('cyberRankerSave2026_v2', JSON.stringify(gameState));
+        }
+
+        // Brauzer xotirasidan o'yinni tiklash
+        function loadProgress() {
+            const data = localStorage.getItem('cyberRankerSave2026_v2');
+            if(data) {
+                try {
+                    gameState = JSON.parse(data);
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        function resetAllData() {
+            if(confirm("Haqiqatdan ham hamma ma'lumotlarni o'chirib yubormoqchimisiz?")) {
+                localStorage.removeItem('cyberRankerSave2026_v2');
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
